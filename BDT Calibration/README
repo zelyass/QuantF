@@ -1,0 +1,32 @@
+Code Description
+
+This Python script is designed to implement a financial model involving bond pricing,
+interest rate tree construction, and option pricing using the Binomial Model (BDT).
+The main components of the code include:
+
+1. Data Preparation:
+   - A DataFrame is created to hold yield, bond price, and yield volatility data for
+     three different bonds. The bond prices are calculated using the formula 
+     Bond Price = 1 / (1 + Yield) ** index.
+
+2. Matrix Initialization:
+   - Several matrices are initialized to hold probabilities, interest rates, and Arrow-Debreu 
+     (AD) prices, which are essential for martingale pricing and building the interest rate tree.
+
+3. Martingale Pricing Function:
+   - A function `martingale_pricing` is defined to calculate the Arrow-Debreu price 
+     based on the node position in the tree, updating the `ado_matrix`.
+
+4. Jamishidian’s Forward Induction:
+   - The function `jfi` calculates the Arrow-Debreu prices at each node, which are needed
+     to compute bond prices and interest rates.
+
+5. Rate Volatility Calculation:
+   - A function `rate_vol` computes the volatility of interest rates using the logarithmic 
+     transformation.
+
+6. Main Loop for Building Trees:
+   - The main loop iterates through each time step to fill in the interest rate tree 
+     and compute the corresponding yield and rate values. It solves systems of equations 
+     to determine interest rates at each step, taking into account the calculated 
+     Arrow-Debreu prices.
