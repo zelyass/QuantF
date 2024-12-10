@@ -1,6 +1,6 @@
 
-## Summary
+##Summary
 This project implements a numerical solution to the Black-Scholes PDE for a European call option using the Forward Time Central Space (FTCS) finite difference method. The model is applied to a forward contract, where the underlying asset follows a stochastic process defined by the given stochastic differential equations.
 
-## Usage
+##Usage
 Please do not use my intellectual property without my written permission.
