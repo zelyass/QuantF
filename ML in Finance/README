@@ -1,0 +1,13 @@
+SUMMARY
+
+This project presents a comprehensive framework for portfolio optimization leveraging a
+combination of machine learning, Geometric Brownian Motion (GBM) simulations, and
+advanced financial modeling. By integrating Long Short-Term Memory (LSTM) networks
+for return predictions and portfolio optimization techniques, the framework demonstrates a
+dynamic and robust method to maximize returns while managing risk. The results are
+backtested using simulated market scenarios, highlighting the effectiveness of the proposed
+approach. 
+
+USAGE
+
+Please do not use this project without a written permission allowing you to do so
