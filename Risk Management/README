@@ -1,0 +1,16 @@
+# Risk Management Models
+
+Welcome to the **Risk Management Models** repository! This collection contains advanced models and tools for assessing and managing financial risk. Here, you will find various techniques such as the **Delta-Normal Approximation** for Value-at-Risk (VaR), **Importance Sampling**, and **Monte Carlo Simulations**. These methods are essential for evaluating the risk exposure of portfolios under different market conditions.
+
+## Key Features:
+- **Delta-Normal Approximation for VaR**: Estimate the 5-day Value-at-Risk of portfolios, assuming a normal distribution of asset returns.
+- **Importance Sampling**: Adjust probabilities to better capture rare and extreme market events, enhancing risk estimation.
+- **Monte Carlo Simulations**: Generate simulated market scenarios to assess potential losses, incorporating variance reduction techniques for efficiency.
+
+## Getting Started
+
+To get started with the models in this repository, follow these steps:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/zelyass/QuantF.git
