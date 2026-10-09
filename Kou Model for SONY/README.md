@@ -1,26 +1,26 @@
-# Bayesian Estimation of the Kou Jump-Diffusion Model — SONY
+# Bayesian Estimation of the Kou Jump-Diffusion Model: SONY
 
-Markets move in ways that are difficult to model honestly. Returns drift, compress, and occasionally leap — discontinuously, asymmetrically, with tails far heavier than a Gaussian would suggest. The Kou (2002) jump-diffusion model was built with exactly this in mind, and this project estimates it fully, from the ground up, for Sony (`SONY`) equity returns over **2020–2026**.
+Equity returns drift, compress, and occasionally jump. The moves are discontinuous and asymmetric, and their tails are much heavier than a normal law allows. The Kou (2002) jump-diffusion model was built for this setting. This project fits it from the ground up to Sony (`SONY`) log-returns from 2020 to 2026.
 
-The implementation is entirely self-contained. Without much use of blackbox probabilistic tools, we are trying to implement a custom Gibbs sampler and a careful conversation between the data and the prior.
+The implementation is self-contained. We build a custom Gibbs sampler and let the data and the prior settle the estimate between them.
 
 ---
 
 ## Why This Model
 
-Three things consistently appear in financial return series that standard diffusion models struggle to accommodate:
+Three features of financial return series are difficult for standard diffusion models to capture:
 
-- Tails are too heavy — crashes and rallies happen far more often than a Gaussian would predict
-- Returns are asymmetric — bad days tend to be more extreme than good ones
-- Prices jump — discrete, discontinuous moves that no continuous-path model can honestly reproduce
+- Tails are heavy. Crashes and rallies occur far more often than a Gaussian predicts.
+- Returns are asymmetric. Large losses tend to be larger than large gains.
+- Prices jump. Discontinuous moves appear that a continuous-path model can only approximate.
 
-The Kou double-exponential model addresses all three. It lets the data tell you not just *whether* jumps occurred, but *how large* they were, *which direction* they tended to go, and *how often* to expect them - with full uncertainty attached to every answer.
+The Kou double-exponential model handles all three. From the data it estimates whether jumps occurred, how large they were, which direction they tended to take, and how often they arise. Each answer comes with its posterior uncertainty.
 
 ---
 
 ## The Model
 
-Log-returns decompose into a diffusive part and a jump part:
+Log-returns split into a diffusive part and a jump part:
 ```
 r_k = μΔ + σ√Δ · ε_k + J_k · Y_k
 
@@ -28,79 +28,79 @@ r_k = μΔ + σ√Δ · ε_k + J_k · Y_k
   J_k ~ Bernoulli(π)
 ```
 
-When a jump occurs, its size is drawn from a double-exponential distribution:
+On a jump day, the jump size follows a double-exponential law:
 ```
        ⎧  Exp(η₁)   with probability p        (upward jump)
 Y_k ~ ⎨
        ⎩ -Exp(η₂)   with probability (1 − p)  (downward jump)
 ```
 
-The asymmetry between `η₁` and `η₂` is what allows the model to capture the well-known tendency of equity crashes to be sharper and faster than rallies.
+The asymmetry between `η₁` and `η₂` lets the model reflect the common observation that equity crashes are sharper and faster than rallies.
 
 ---
 
 ## Bayesian Estimation
 
-### Eliciting priors from the data
+### Priors from the data
 
-Priors are grounded directly in what the data suggests before inference begins, rather than reaching for uninformative defaults:
+Priors are anchored to the sample before inference begins. Each one reflects what the observed series already shows:
 
-- `μ` and `σ` are anchored to sample moments
-- Jump candidates are flagged using a volatility threshold rule
-- Tail decay rates are estimated via excess-over-threshold — this isolates the exponential decay from observations that genuinely belong to the tail, rather than conflating it with the bulk of the distribution
+- `μ` and `σ` are anchored to sample moments.
+- Jump candidates are flagged by a volatility threshold rule.
+- Tail decay rates are estimated by excess-over-threshold. This isolates the exponential decay using only observations in the tail, so the estimate reflects the tail alone.
 
-For the jump probability, the prior is deliberately tight:
+For the jump probability, the prior is tight:
 ```
 π ~ Beta(2, 200)
 ```
 
-What we are conveying with this choice is a belief of roughly 1% daily jump probability — consistent with decades of equity market evidence — and a regularizing pressure against the model s natural tendency to over-explain variance through spurious jumps.
+It encodes a belief of roughly a 1% daily jump probability, consistent with decades of equity market evidence. It also restrains the model's tendency to explain excess variance through spurious jumps.
 
 ### Gibbs sampling
 
-Posterior inference runs through a hand-built Gibbs sampler. At each iteration, the sampler maintains two latent variables per observation:
+Posterior inference runs through a hand-built Gibbs sampler. Each iteration carries two latent variables per observation:
 
-- `J_k` — did a jump occur on day *k*?
-- `Y_k` — if so, how large was it?
+- `J_k`, whether a jump occurred on day *k*
+- `Y_k`, the size of that jump, if one occurred
 
-These are updated in turn alongside the model parameters, all via conjugate full conditionals. Log-scale arithmetic is used throughout where numerical underflow is a risk.
+Both update alongside the model parameters through conjugate full conditionals. Computations run on the log scale wherever underflow is a risk.
 
 ---
 
-## Getting the Details Right
+## Details That Matter
 
-Several design choices are essential to stable, well-identified inference.
+Several design choices make inference stable and well identified.
 
 ### Keeping jumps honest
 
-Without a minimum size constraint, small diffusive fluctuations tend to leak into the jump component and inflate `π`. This translates to the following constraint:
+Small diffusive fluctuations would otherwise leak into the jump component and inflate `π`. A minimum jump size prevents this:
 ```
 |Y_k| ≥ y_min = 2σ
 ```
 
-is a hard boundary that keeps the diffusive and jump components doing the jobs they were each designed to do.
+This boundary keeps each component focused on its own job: the diffusion explains small moves, and the jumps explain large ones.
 
-### Tail estimation grounded in the tails
+### Estimating the tails from the tails
 
-Estimating `η₁` and `η₂` from raw sample averages conflates the bulk of the distribution with its tail. The excess-over-threshold approach instead focuses estimation where it belongs:
+Raw sample averages for `η₁` and `η₂` mix the bulk of the distribution with its tail. The excess-over-threshold approach concentrates estimation on the tail:
 ```
 E[Y − u | Y > u]
 ```
 
-What we are conveying here is a consistent estimator of the exponential decay rate, derived only from observations that exceed the threshold - the ones that actually define tail behavior.
+This yields a consistent estimator of the exponential decay rate. It draws only on observations above the threshold `u`, which are the observations that define tail behavior.
 
-### Respecting the continuous-time limit
+### The continuous-time limit
 
-The Bernoulli approximation underpinning the discrete sampler is valid only when:
+The Bernoulli approximation behind the discrete sampler holds when:
 ```
 λΔ ≪ 1
 ```
 
-This condition is verified explicitly. This means that the discrete estimation procedure remains consistent with the continuous-time process it approximates - a connection that breaks silently if the condition is ignored.
+We check this condition explicitly. When it holds, the discrete procedure tracks the continuous-time process it approximates. If it fails, the mismatch would go unnoticed.
 
 ---
 
-## What the Pipeline Produces
+## Outputs
 
 ### Exploratory diagnostics
 - Price and return series with annotated jump events
@@ -112,11 +112,11 @@ This condition is verified explicitly. This means that the discrete estimation p
 
 ### Posterior results
 - Full marginal distributions for `μ`, `σ`, `π`, `η₁`, `η₂`, `p`
-- Derived quantities: annualized volatility, jump intensity `λ`, expected jump magnitudes by direction
+- Derived quantities: annualized volatility, jump intensity `λ`, and expected jump magnitudes by direction
 
 ### Predictive validation
 - Simulated vs. observed return distributions
-- Kurtosis comparison to verify tail fit
+- Kurtosis comparison to check the tail fit
 
 ---
 
@@ -142,13 +142,13 @@ This condition is verified explicitly. This means that the discrete estimation p
 
 ---
 
-## What This Work Shows
+## Takeaways
 
-Fitting a jump-diffusion model is straightforward. Fitting it well requires deliberate choices at every stage. The Kou model is expressive enough to match the asymmetric tail behavior observed in real equity data — and that expressiveness demands careful prior design and identifiability constraints to function as intended.
+Fitting a jump-diffusion model is routine. Fitting it well requires a deliberate choice at each stage. The Kou model is flexible enough to match the asymmetric tails of equity returns, and that flexibility calls for careful prior design and identifiability constraints.
 
-What we are conveying through the choices made here — informative priors, minimum jump sizes, threshold-based tail estimation — is a coherent set of commitments about what the model should and should not absorb. Together, they are the difference between a posterior that reflects the data and one that reflects the model's appetite for complexity.
+The choices made here (informative priors, a minimum jump size, threshold-based tail estimation) determine what the model is allowed to explain. Those choices decide whether the posterior reflects the data or the model's appetite for complexity.
 
-- The Kou model effectively captures asymmetric tail behavior in equity returns
-- Bayesian estimation provides full uncertainty quantification over all parameters
-- Prior specification is critical: without constraints, jump-diffusion models systematically overfit jump intensity
-- Excess-over-threshold estimation of tail parameters is strongly preferred over naive moment matching
+- The Kou model captures asymmetric tail behavior in equity returns.
+- Bayesian estimation gives uncertainty quantification for every parameter.
+- Jump-diffusion models tend to overfit jump intensity when the prior is loosely specified.
+- Excess-over-threshold estimation of tail parameters is strongly preferred to naive moment matching.
