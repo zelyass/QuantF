@@ -16,7 +16,7 @@ MATLAB (R2026a) with the Financial Instruments Toolbox
 
 ## Data
 
-The market data used in the report comes from Bloomberg and Bank of Canada
+The market data used in the report comes from Bloomberg and Bank of Canada. I will unfortunately not share them directly here for Terms reasons.
 
 ## Tools disclosure
 
