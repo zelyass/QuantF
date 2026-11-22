@@ -8,27 +8,15 @@ Design and analysis of two capital-protected structured notes, written for **FIN
 - **Valuation:** under the risk-neutral measure Q, with the initial-equity condition V0 = N0.
 - **Risk analysis:** Monte Carlo under the physical measure P, with VaR95% and ES95% read as shortfall measures, and a first-order stochastic dominance comparison between configurations.
 
-The full report (in French) is in [`report/Projet_produits_structures.pdf`](report/Projet_produits_structures.pdf).
-
-## Repository layout
-
-```
-report/   Final report (PDF, French)
-code/
-  heston/ MATLAB live scripts: implied dividend yield q under Q, Heston calibration, Product 1 and 2 equity components
-  rates/  MATLAB live script: Vasicek calibration to the CAD OIS curve
-data/     CORRA series (Bank of Canada) and calibrated Vasicek parameters
-```
-
-Suggested order: `Part I Calibration of q under Q` → `Calibration Heston parametres` → `Vasicek_Whole` → `Product 1` / `Product 2`.
+The full report (in French) is in under Reports and is in French
 
 ## Requirements
 
-MATLAB (R2026a) with the Financial Instruments Toolbox (`optByHestonNI`).
+MATLAB (R2026a) with the Financial Instruments Toolbox 
 
 ## Data
 
-The market data used in the report comes from Bloomberg and is **not redistributed** here. See [`data/README.md`](data/README.md) for what is included and how to re-create the rest.
+The market data used in the report comes from Bloomberg and Bank of Canada
 
 ## Tools disclosure
 
@@ -36,4 +24,4 @@ Grammarly was used for language corrections. ChatGPT was used occasionally for f
 
 ## Licence
 
-Code: MIT (see `LICENSE`). The report is © 2026 Zakaria El Yassini, all rights reserved.
+Code: MIT. The report is © 2026 Zakaria El Yassini, all rights reserved.
